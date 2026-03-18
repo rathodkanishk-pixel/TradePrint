@@ -34,8 +34,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .consent-block{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:18px}
 .consent-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer}
 .consent-item:last-child{margin-bottom:0}
-.consent-cb{width:17px;height:17px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;transition:.2s;background:var(--bg2)}
-.consent-item.checked .consent-cb{background:var(--green);border-color:var(--green);color:#000}
+.consent-item input[type="checkbox"]{width:17px;height:17px;flex-shrink:0;margin-top:2px;accent-color:var(--green);cursor:pointer}
 .consent-text{font-size:12px;color:var(--text2);line-height:1.5}
 .consent-text a{color:var(--amber);text-decoration:none}
 .consent-text a:hover{text-decoration:underline}
@@ -84,22 +83,22 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="field"><label>Password</label><input type="password" id="su-password" placeholder="Minimum 8 characters"></div>
 
     <div class="consent-block">
-      <div class="consent-item" onclick="toggleConsent(this)">
-        <div class="consent-cb">✓</div>
+      <label class="consent-item">
+        <input type="checkbox" id="cb1">
         <div class="consent-text">I have read and agree to TradePrint's <a href="#" onclick="return false">Terms of Service</a> and <a href="#" onclick="return false">Privacy Policy</a>.</div>
-      </div>
-      <div class="consent-item" onclick="toggleConsent(this)">
-        <div class="consent-cb">✓</div>
+      </label>
+      <label class="consent-item">
+        <input type="checkbox" id="cb2">
         <div class="consent-text">I understand that TradePrint is not SEBI registered and does not provide investment advice. All analysis is based on data I enter myself.</div>
-      </div>
-      <div class="consent-item" onclick="toggleConsent(this)">
-        <div class="consent-cb">✓</div>
+      </label>
+      <label class="consent-item">
+        <input type="checkbox" id="cb3">
         <div class="consent-text">I accept the <a href="#" onclick="return false">Risk Disclosure</a>. I understand trading involves substantial risk of loss and I am solely responsible for my trading decisions.</div>
-      </div>
-      <div class="consent-item" onclick="toggleConsent(this)">
-        <div class="consent-cb">✓</div>
+      </label>
+      <label class="consent-item">
+        <input type="checkbox" id="cb4">
         <div class="consent-text">I agree to the <a href="#" onclick="return false">Community Guidelines</a>. I will not post stock tips, trade calls, or investment advice in the community.</div>
-      </div>
+      </label>
     </div>
 
     <button class="auth-btn" id="signup-btn" onclick="signUp()">Create My Account →</button>
@@ -136,7 +135,7 @@ function toggleConsent(el) {
 }
 
 function allConsented() {
-  return [...document.querySelectorAll('#form-signup .consent-item')].every(i => i.classList.contains('checked'));
+  return ['cb1','cb2','cb3','cb4'].every(id => document.getElementById(id)?.checked);
 }
 
 function showError(msg) {
