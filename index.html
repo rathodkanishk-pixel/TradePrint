@@ -45,7 +45,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(5,8,11,0.92)
 
 /* HERO */
 .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 5% 80px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%, rgba(232,160,32,0.06) 0%, transparent 70%)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%, rgba(232,160,32,0.06) 0%, transparent 70%);pointer-events:none}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:6px 14px;font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
 .hero-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
@@ -207,7 +207,7 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 5%;d
     <p class="hero-sub">Most traders think they know why they're losing. They're wrong. TradePrint analyses your real trading data to show you the truth — and helps you build a consistent, profitable trading business.</p>
     <div class="hero-actions">
       <a href="auth.html" class="btn-primary">Start For Free →</a>
-      <a href="#features" class="btn-ghost">See How It Works</a>
+      <a href="#features" class="btn-ghost" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'});return false;">See How It Works</a>
     </div>
     <div class="hero-disclaimer">No investment advice. No stock tips. No FOMO. Just your data, your patterns, your edge — built by you, for you.</div>
   </div>
