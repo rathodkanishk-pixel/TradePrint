@@ -120,7 +120,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 
 <script>
-const supabase = window.supabaseClient;
+// Wait for supabase to be ready
+let supabase;
+function getSB() {
+  if (!supabase) supabase = window.supabaseClient;
+  if (!supabase) { showError('Connection error. Please refresh the page.'); return null; }
+  return supabase;
+}
 
 function switchTab(tab, btn) {
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('on'));
@@ -155,6 +161,7 @@ function clearMessages() {
 
 async function signUp() {
   clearMessages();
+  const sb = getSB(); if (!sb) return;
   const name = document.getElementById('su-name').value.trim();
   const email = document.getElementById('su-email').value.trim();
   const password = document.getElementById('su-password').value;
@@ -162,13 +169,13 @@ async function signUp() {
   if (!name) { showError('Please enter your name.'); return; }
   if (!email) { showError('Please enter your email.'); return; }
   if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
-  if (!allConsented()) { showError('Please read and agree to all terms before creating your account.'); return; }
+  if (!allConsented()) { showError('Please tick all 4 checkboxes before creating your account.'); return; }
 
   const btn = document.getElementById('signup-btn');
   btn.disabled = true; btn.textContent = 'Creating account...';
 
   try {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await sb.auth.signUp({
       email, password,
       options: { data: { full_name: name } }
     });
@@ -182,12 +189,13 @@ async function signUp() {
 
 async function logIn() {
   clearMessages();
+  const sb = getSB(); if (!sb) return;
   const email = document.getElementById('li-email').value.trim();
   const password = document.getElementById('li-password').value;
   if (!email || !password) { showError('Please enter email and password.'); return; }
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) throw error;
     window.location.href = 'app.html';
   } catch (e) {
@@ -196,8 +204,11 @@ async function logIn() {
 }
 
 // Check if already logged in
-supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.href = 'app.html';
+window.addEventListener('load', () => {
+  const sb = getSB(); if (!sb) return;
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = 'app.html';
+  });
 });
 
 // Enter key support
