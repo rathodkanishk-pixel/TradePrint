@@ -120,12 +120,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 
 <script>
-// Wait for supabase to be ready
-let supabase;
+let _sb;
 function getSB() {
-  if (!supabase) supabase = window.supabaseClient;
-  if (!supabase) { showError('Connection error. Please refresh the page.'); return null; }
-  return supabase;
+  if (!_sb) _sb = window.supabaseClient;
+  if (!_sb) { showError('Connection error. Please refresh the page.'); return null; }
+  return _sb;
 }
 
 function switchTab(tab, btn) {
