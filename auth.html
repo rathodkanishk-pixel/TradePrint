@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradePrint — Sign Up / Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+:root{--bg:#05080b;--bg2:#0b1018;--bg3:#111820;--border:#1c2838;--border2:#253345;--text:#dce8f5;--text2:#7a94ad;--text3:#3d5168;--amber:#e8a020;--amber2:#ffc046;--green:#00d68f;--red:#f0455a;--head:'Barlow Condensed',sans-serif;--mono:'JetBrains Mono',monospace;--body:'Outfit',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(232,160,32,0.05) 0%,transparent 70%);pointer-events:none}
+.auth-logo{font-family:var(--head);font-size:28px;font-weight:900;color:var(--amber);letter-spacing:.5px;margin-bottom:28px;text-align:center}
+.auth-logo span{color:var(--text3)}
+.auth-logo a{color:var(--text3);font-size:13px;font-family:var(--body);text-decoration:none;margin-left:12px;transition:.2s}
+.auth-logo a:hover{color:var(--text2)}
+.auth-box{width:100%;max-width:440px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:32px;position:relative;z-index:1}
+.auth-tabs{display:flex;gap:0;margin-bottom:28px;background:var(--bg3);border-radius:8px;padding:4px}
+.auth-tab{flex:1;padding:9px;text-align:center;border-radius:6px;font-family:var(--head);font-size:15px;font-weight:700;cursor:pointer;transition:.2s;color:var(--text3);border:none;background:none;letter-spacing:.3px}
+.auth-tab.on{background:var(--bg2);color:var(--amber);border:1px solid var(--border2)}
+.auth-form{display:none}
+.auth-form.on{display:block}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-bottom:6px}
+.field input{width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:11px 14px;outline:none;transition:.2s}
+.field input:focus{border-color:var(--amber)}
+.field input::placeholder{color:var(--text3)}
+.auth-btn{width:100%;background:var(--amber);color:#000;border:none;border-radius:8px;padding:13px;font-family:var(--head);font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:.2s;margin-top:4px}
+.auth-btn:hover{background:var(--amber2)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed}
+.consent-block{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:18px}
+.consent-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer}
+.consent-item:last-child{margin-bottom:0}
+.consent-cb{width:17px;height:17px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;transition:.2s;background:var(--bg2)}
+.consent-item.checked .consent-cb{background:var(--green);border-color:var(--green);color:#000}
+.consent-text{font-size:12px;color:var(--text2);line-height:1.5}
+.consent-text a{color:var(--amber);text-decoration:none}
+.consent-text a:hover{text-decoration:underline}
+.risk-banner{background:rgba(240,69,90,0.06);border:1px solid rgba(240,69,90,0.2);border-radius:8px;padding:12px;margin-bottom:18px;font-size:11px;color:var(--text3);line-height:1.6}
+.risk-banner strong{color:rgba(240,69,90,.8)}
+.sebi-banner{background:rgba(232,160,32,0.06);border:1px solid rgba(232,160,32,0.2);border-radius:8px;padding:12px;margin-bottom:18px;font-size:11px;color:var(--text3);line-height:1.6}
+.sebi-banner strong{color:var(--amber)}
+.auth-error{background:var(--red);color:#fff;border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.auth-error.on{display:block}
+.auth-success{background:rgba(0,214,143,0.1);border:1px solid var(--green);color:var(--green);border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.auth-success.on{display:block}
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0}
+.divider-line{flex:1;height:1px;background:var(--border)}
+.divider-text{font-size:11px;color:var(--text3)}
+.legal-footer{text-align:center;font-size:11px;color:var(--text3);margin-top:20px;line-height:1.6;max-width:440px}
+.legal-footer a{color:var(--text3);text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div class="auth-logo">
+  Trade<span>Print</span>
+  <a href="index.html">← Back to site</a>
+</div>
+
+<div class="auth-box">
+  <div class="auth-tabs">
+    <button class="auth-tab on" onclick="switchTab('signup',this)">Create Account</button>
+    <button class="auth-tab" onclick="switchTab('login',this)">Log In</button>
+  </div>
+
+  <div id="auth-error" class="auth-error"></div>
+  <div id="auth-success" class="auth-success"></div>
+
+  <!-- SIGNUP -->
+  <div class="auth-form on" id="form-signup">
+    <div class="sebi-banner">
+      <strong>Not Investment Advice:</strong> TradePrint is a personal journal and analytics tool. It is not registered with SEBI and does not provide investment advice or trading recommendations of any kind.
+    </div>
+    <div class="risk-banner">
+      <strong>Risk Disclosure:</strong> Trading in F&O and equities involves substantial risk. Past performance is not indicative of future results. Only trade with capital you can afford to lose.
+    </div>
+
+    <div class="field"><label>Full Name</label><input type="text" id="su-name" placeholder="Your name"></div>
+    <div class="field"><label>Email Address</label><input type="email" id="su-email" placeholder="you@email.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="su-password" placeholder="Minimum 8 characters"></div>
+
+    <div class="consent-block">
+      <div class="consent-item" onclick="toggleConsent(this)">
+        <div class="consent-cb">✓</div>
+        <div class="consent-text">I have read and agree to TradePrint's <a href="#" onclick="return false">Terms of Service</a> and <a href="#" onclick="return false">Privacy Policy</a>.</div>
+      </div>
+      <div class="consent-item" onclick="toggleConsent(this)">
+        <div class="consent-cb">✓</div>
+        <div class="consent-text">I understand that TradePrint is not SEBI registered and does not provide investment advice. All analysis is based on data I enter myself.</div>
+      </div>
+      <div class="consent-item" onclick="toggleConsent(this)">
+        <div class="consent-cb">✓</div>
+        <div class="consent-text">I accept the <a href="#" onclick="return false">Risk Disclosure</a>. I understand trading involves substantial risk of loss and I am solely responsible for my trading decisions.</div>
+      </div>
+      <div class="consent-item" onclick="toggleConsent(this)">
+        <div class="consent-cb">✓</div>
+        <div class="consent-text">I agree to the <a href="#" onclick="return false">Community Guidelines</a>. I will not post stock tips, trade calls, or investment advice in the community.</div>
+      </div>
+    </div>
+
+    <button class="auth-btn" id="signup-btn" onclick="signUp()">Create My Account →</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="auth-form" id="form-login">
+    <div class="field"><label>Email Address</label><input type="email" id="li-email" placeholder="you@email.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="li-password" placeholder="Your password"></div>
+    <button class="auth-btn" onclick="logIn()">Log In →</button>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">or</div><div class="divider-line"></div></div>
+    <div style="text-align:center;font-size:13px;color:var(--text2)">Don't have an account? <span style="color:var(--amber);cursor:pointer" onclick="switchTab('signup',document.querySelector('.auth-tab'))">Create one free →</span></div>
+  </div>
+</div>
+
+<div class="legal-footer">
+  By creating an account you agree to our <a href="#">Terms of Service</a>, <a href="#">Privacy Policy</a>, and <a href="#">Risk Disclosure</a>.<br>
+  TradePrint is not SEBI registered. Not investment advice. Your data is private and never sold.
+</div>
+
+<script>
+const supabase = window.supabaseClient;
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('on'));
+  document.querySelectorAll('.auth-tab')[tab === 'signup' ? 0 : 1].classList.add('on');
+  document.getElementById('form-' + tab).classList.add('on');
+  clearMessages();
+}
+
+function toggleConsent(el) {
+  el.classList.toggle('checked');
+}
+
+function allConsented() {
+  return [...document.querySelectorAll('#form-signup .consent-item')].every(i => i.classList.contains('checked'));
+}
+
+function showError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg; el.classList.add('on');
+  document.getElementById('auth-success').classList.remove('on');
+}
+function showSuccess(msg) {
+  const el = document.getElementById('auth-success');
+  el.textContent = msg; el.classList.add('on');
+  document.getElementById('auth-error').classList.remove('on');
+}
+function clearMessages() {
+  document.getElementById('auth-error').classList.remove('on');
+  document.getElementById('auth-success').classList.remove('on');
+}
+
+async function signUp() {
+  clearMessages();
+  const name = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const password = document.getElementById('su-password').value;
+
+  if (!name) { showError('Please enter your name.'); return; }
+  if (!email) { showError('Please enter your email.'); return; }
+  if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+  if (!allConsented()) { showError('Please read and agree to all terms before creating your account.'); return; }
+
+  const btn = document.getElementById('signup-btn');
+  btn.disabled = true; btn.textContent = 'Creating account...';
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
+      options: { data: { full_name: name } }
+    });
+    if (error) throw error;
+    showSuccess('Account created! Check your email to verify, then log in.');
+  } catch (e) {
+    showError(e.message || 'Something went wrong. Please try again.');
+  }
+  btn.disabled = false; btn.textContent = 'Create My Account →';
+}
+
+async function logIn() {
+  clearMessages();
+  const email = document.getElementById('li-email').value.trim();
+  const password = document.getElementById('li-password').value;
+  if (!email || !password) { showError('Please enter email and password.'); return; }
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    window.location.href = 'app.html';
+  } catch (e) {
+    showError(e.message || 'Invalid credentials. Please try again.');
+  }
+}
+
+// Check if already logged in
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = 'app.html';
+});
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('form-signup').classList.contains('on')) signUp();
+    else logIn();
+  }
+});
+</script>
+</body>
+</html>

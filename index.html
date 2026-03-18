@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradePrint — Find Your Trading Edge</title>
+<meta name="description" content="The personal trading business operating system for serious F&O and MTF traders. Log every trade. Discover your real edge. Build a career.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #05080b;
+  --bg2:    #0b1018;
+  --bg3:    #111820;
+  --bg4:    #18222e;
+  --border: #1c2838;
+  --border2:#253345;
+  --text:   #dce8f5;
+  --text2:  #7a94ad;
+  --text3:  #3d5168;
+  --amber:  #e8a020;
+  --amber2: #ffc046;
+  --green:  #00d68f;
+  --red:    #f0455a;
+  --blue:   #3fb5f0;
+  --head: 'Barlow Condensed', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'Outfit', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(5,8,11,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--head);font-size:24px;font-weight:900;color:var(--amber);letter-spacing:.5px}
+.nav-logo span{color:var(--text3)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:14px;transition:.2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--amber);color:#000;border:none;border-radius:6px;padding:9px 22px;font-family:var(--head);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:.2s;letter-spacing:.3px}
+.nav-cta:hover{background:var(--amber2)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 5% 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%, rgba(232,160,32,0.06) 0%, transparent 70%)}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:6px 14px;font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
+.hero-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.hero h1{font-family:var(--head);font-size:clamp(52px,8vw,96px);font-weight:900;line-height:.95;letter-spacing:-1px;margin-bottom:24px}
+.hero h1 em{font-style:normal;color:var(--amber)}
+.hero-sub{font-size:clamp(16px,2.5vw,20px);color:var(--text2);max-width:600px;margin:0 auto 40px;line-height:1.6;font-weight:300}
+.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:var(--amber);color:#000;border:none;border-radius:8px;padding:14px 32px;font-family:var(--head);font-size:17px;font-weight:700;cursor:pointer;text-decoration:none;transition:.2s;letter-spacing:.3px;display:inline-block}
+.btn-primary:hover{background:var(--amber2);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text);border:1.5px solid var(--border2);border-radius:8px;padding:14px 32px;font-family:var(--head);font-size:17px;font-weight:700;cursor:pointer;text-decoration:none;transition:.2s;letter-spacing:.3px;display:inline-block}
+.btn-ghost:hover{border-color:var(--amber);color:var(--amber)}
+.hero-disclaimer{margin-top:24px;font-size:11px;color:var(--text3);max-width:500px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+/* STATS BAR */
+.stats-bar{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:24px 5%;display:flex;justify-content:center;gap:clamp(24px,5vw,80px);flex-wrap:wrap}
+.stat-item{text-align:center}
+.stat-num{font-family:var(--mono);font-size:clamp(22px,3vw,32px);font-weight:700;color:var(--amber);display:block}
+.stat-lbl{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* PROBLEM SECTION */
+.section{padding:80px 5%}
+.section-eyebrow{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+.section-title{font-family:var(--head);font-size:clamp(36px,5vw,58px);font-weight:900;text-align:center;line-height:1;letter-spacing:-.5px;margin-bottom:16px}
+.section-sub{font-size:16px;color:var(--text2);text-align:center;max-width:600px;margin:0 auto 56px;line-height:1.6}
+.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:1100px;margin:0 auto}
+.problem-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:22px;position:relative;overflow:hidden}
+.problem-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--red)}
+.problem-icon{font-size:28px;margin-bottom:12px}
+.problem-title{font-family:var(--head);font-size:18px;font-weight:800;margin-bottom:8px;letter-spacing:.3px}
+.problem-body{font-size:13px;color:var(--text2);line-height:1.6}
+.problem-stat{font-family:var(--mono);font-size:11px;color:var(--red);margin-top:10px}
+
+/* SOLUTION SECTION */
+.solution-wrap{max-width:1100px;margin:0 auto}
+.solution-tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+.sol-tab{padding:10px 20px;border-radius:6px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-family:var(--head);font-size:14px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.3px}
+.sol-tab:hover,.sol-tab.on{border-color:var(--amber);color:var(--amber);background:rgba(232,160,32,0.08)}
+.sol-content{display:none;animation:fadeIn .25s ease}
+.sol-content.on{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sol-visual{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;font-family:var(--mono);font-size:12px}
+.sol-visual-title{font-family:var(--head);font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px}
+.sol-info h3{font-family:var(--head);font-size:clamp(28px,3vw,40px);font-weight:900;margin-bottom:14px;letter-spacing:.3px;line-height:1.1}
+.sol-info p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px}
+.sol-feature-list{display:flex;flex-direction:column;gap:10px}
+.sol-feature{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text2)}
+.sol-feature-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px}
+@media(max-width:700px){.sol-content.on{grid-template-columns:1fr}}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;max-width:1100px;margin:0 auto}
+.feature-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;transition:.2s}
+.feature-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.feature-icon{font-size:26px;margin-bottom:14px}
+.feature-title{font-family:var(--head);font-size:20px;font-weight:800;margin-bottom:8px;letter-spacing:.3px}
+.feature-body{font-size:13px;color:var(--text2);line-height:1.6}
+.feature-tag{display:inline-block;margin-top:12px;padding:3px 9px;border-radius:4px;font-family:var(--mono);font-size:10px;font-weight:600;background:rgba(232,160,32,0.1);color:var(--amber)}
+
+/* INDIA SECTION */
+.india-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px;margin:0 auto}
+@media(max-width:600px){.india-grid{grid-template-columns:1fr}}
+.india-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;display:flex;gap:14px;align-items:flex-start}
+.india-card-icon{font-size:20px;flex-shrink:0;margin-top:2px}
+.india-card-title{font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:4px}
+.india-card-body{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* COMMUNITY */
+.community-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.community-wrap{max-width:1000px;margin:0 auto}
+.community-rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:40px}
+@media(max-width:600px){.community-rules{grid-template-columns:1fr}}
+.rule-card{padding:16px 18px;border-radius:8px;font-size:13px;line-height:1.5;display:flex;gap:12px;align-items:flex-start}
+.rule-card.allowed{background:rgba(0,214,143,0.06);border:1px solid rgba(0,214,143,0.2)}
+.rule-card.banned{background:rgba(240,69,90,0.06);border:1px solid rgba(240,69,90,0.2)}
+.rule-card-icon{font-size:16px;flex-shrink:0}
+.rule-card-title{font-family:var(--head);font-size:14px;font-weight:700;margin-bottom:3px}
+.rule-card.allowed .rule-card-title{color:var(--green)}
+.rule-card.banned .rule-card-title{color:var(--red)}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:780px;margin:0 auto}
+@media(max-width:600px){.pricing-grid{grid-template-columns:1fr}}
+.pricing-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;position:relative}
+.pricing-card.featured{border-color:var(--amber);background:linear-gradient(135deg,rgba(232,160,32,0.05) 0%, var(--bg2) 100%)}
+.pricing-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--amber);color:#000;font-family:var(--head);font-size:12px;font-weight:700;padding:4px 14px;border-radius:12px;white-space:nowrap}
+.pricing-tier{font-family:var(--mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.pricing-price{font-family:var(--head);font-size:42px;font-weight:900;line-height:1;margin-bottom:4px}
+.pricing-price span{font-size:18px;color:var(--text2);font-weight:400}
+.pricing-cycle{font-size:12px;color:var(--text3);margin-bottom:20px}
+.pricing-divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+.pricing-features{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.pf-item{display:flex;align-items:center;gap:10px;font-size:13px}
+.pf-item.no{color:var(--text3)}
+.pf-check{font-size:13px;flex-shrink:0}
+
+/* LEGAL */
+.legal-section{background:var(--bg2);border-top:1px solid var(--border)}
+.legal-box{max-width:900px;margin:0 auto;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:24px;font-size:12px;color:var(--text3);line-height:1.8}
+.legal-box strong{color:var(--text2)}
+.legal-box h4{font-family:var(--head);font-size:15px;font-weight:700;color:var(--text2);margin-bottom:8px}
+
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 5%;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center}
+.footer-logo{font-family:var(--head);font-size:22px;font-weight:900;color:var(--amber)}
+.footer-logo span{color:var(--text3)}
+.footer-links{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.footer-links a{color:var(--text3);font-size:13px;text-decoration:none;transition:.2s}
+.footer-links a:hover{color:var(--text2)}
+.footer-copy{font-size:12px;color:var(--text3)}
+
+/* DISCLAIMER BANNER */
+.disclaimer-banner{background:rgba(240,69,90,0.06);border-top:1px solid rgba(240,69,90,0.2);padding:12px 5%;text-align:center;font-size:11px;color:var(--text3);line-height:1.6}
+.disclaimer-banner strong{color:rgba(240,69,90,.8)}
+
+/* BAR VIZ */
+.mini-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.mini-bar-lbl{font-size:11px;color:var(--text2);width:90px;flex-shrink:0}
+.mini-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:3px}
+.mini-bar-val{font-size:11px;color:var(--text2);min-width:35px;text-align:right}
+
+/* INSIGHT MOCK */
+.insight-mock{background:var(--bg3);border-radius:8px;padding:12px 14px;border-left:3px solid var(--green);margin-bottom:8px}
+.insight-mock.warn{border-left-color:var(--amber)}
+.insight-mock.bad{border-left-color:var(--red)}
+.insight-mock-head{font-family:var(--head);font-size:13px;font-weight:700;margin-bottom:3px}
+.insight-mock-body{font-size:11px;color:var(--text2)}
+
+/* RESPONSIVE NAV */
+@media(max-width:600px){.nav-links{display:none}.hero{padding-top:80px}}
+</style>
+</head>
+<body>
+
+<!-- DISCLAIMER BANNER -->
+<div class="disclaimer-banner">
+  <strong>Important:</strong> TradePrint is a personal trading journal and analytics tool. It does not provide investment advice and is not registered with SEBI as an Investment Adviser or Research Analyst. All analysis is based solely on data you enter. Trading in F&O and equities involves substantial risk of loss.
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Trade<span>Print</span></div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#community">Community</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <a href="auth.html" class="nav-cta">Start Free →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="hero-eyebrow">
+      <div class="hero-eyebrow-dot"></div>
+      Built for Serious F&O & MTF Traders
+    </div>
+    <h1>Your Trading<br><em>Fingerprint</em><br>Reveals Everything</h1>
+    <p class="hero-sub">Most traders think they know why they're losing. They're wrong. TradePrint analyses your real trading data to show you the truth — and helps you build a consistent, profitable trading business.</p>
+    <div class="hero-actions">
+      <a href="auth.html" class="btn-primary">Start For Free →</a>
+      <a href="#features" class="btn-ghost">See How It Works</a>
+    </div>
+    <div class="hero-disclaimer">No investment advice. No stock tips. No FOMO. Just your data, your patterns, your edge — built by you, for you.</div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item"><span class="stat-num">91%</span><div class="stat-lbl">of retail traders lose money in F&O</div></div>
+  <div class="stat-item"><span class="stat-num">₹1.1L</span><div class="stat-lbl">average annual loss per trader (FY25)</div></div>
+  <div class="stat-item"><span class="stat-num">2%</span><div class="stat-lbl">who study their own data consistently profit</div></div>
+</div>
+
+<!-- PROBLEM SECTION -->
+<section class="section" id="problem">
+  <div class="section-eyebrow">The Real Problem</div>
+  <div class="section-title">You Don't Need<br>Another Strategy</div>
+  <div class="section-sub">You need to understand yourself as a trader. Every pattern you need to fix is already inside your trading data. You just haven't looked at it properly.</div>
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="problem-icon">🤬</div>
+      <div class="problem-title">Revenge Trading</div>
+      <div class="problem-body">One loss leads to another. You know you're doing it. You can't stop. TradePrint detects it automatically and shows you exactly how much it's cost you — in rupees.</div>
+      <div class="problem-stat">Detected across 67% of losing traders' data</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">📋</div>
+      <div class="problem-title">Rules You Break</div>
+      <div class="problem-body">You have rules in your head. Under pressure, they disappear. TradePrint makes you confirm rule adherence on every single trade log — and tracks your discipline score over time.</div>
+      <div class="problem-stat">Avg trader breaks their own rules 38% of trades</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🎯</div>
+      <div class="problem-title">Setups That Don't Work</div>
+      <div class="problem-body">You keep trading setups that statistically lose for you. TradePrint tracks win rate by each setup type and flags setups that are hurting your P&L for retirement.</div>
+      <div class="problem-stat">Most traders have 1-2 setups destroying their returns</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">😰</div>
+      <div class="problem-title">Emotional Entries</div>
+      <div class="problem-body">FOMO, anxiety, boredom — emotions drive most retail losses. TradePrint tracks your emotion at entry on every trade and correlates it with your outcome. The data doesn't lie.</div>
+      <div class="problem-stat">Win rate drops 40% on emotionally-driven trades</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🕐</div>
+      <div class="problem-title">Wrong Time of Day</div>
+      <div class="problem-body">Many traders bleed money during low-volume hours without realising it. TradePrint maps your win rate by hour and by day to show you exactly when you trade best and worst.</div>
+      <div class="problem-stat">Lunch hour (11:30–1pm) is where most boredom trades happen</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">📉</div>
+      <div class="problem-title">No Systematic Review</div>
+      <div class="problem-body">Most traders never review their trades systematically. They vaguely remember wins and vividly remember losses. TradePrint gives you a structured weekly review built from your actual data.</div>
+      <div class="problem-stat">Traders who review weekly improve 3x faster</div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION / FEATURES SECTION -->
+<section class="section" id="features" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="section-eyebrow">How TradePrint Works</div>
+  <div class="section-title">Three Pillars of a<br><em style="font-style:normal;color:var(--amber)">Trading Business</em></div>
+  <div class="section-sub">TradePrint is built around the three things that separate a serious trader from a gambler.</div>
+
+  <div class="solution-wrap">
+    <div class="solution-tabs">
+      <button class="sol-tab on" onclick="showTab('edge',this)">📡 Your Edge</button>
+      <button class="sol-tab" onclick="showTab('discipline',this)">📏 Discipline</button>
+      <button class="sol-tab" onclick="showTab('community',this)">🤝 Community</button>
+    </div>
+
+    <div class="sol-content on" id="tab-edge">
+      <div class="sol-visual">
+        <div class="sol-visual-title">Win Rate by Setup Type</div>
+        <div class="mini-bar-row"><div class="mini-bar-lbl">Breakout</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:71%;background:var(--green)"></div></div><div class="mini-bar-val" style="color:var(--green)">71%</div></div>
+        <div class="mini-bar-row"><div class="mini-bar-lbl">Pullback</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:58%;background:var(--amber)"></div></div><div class="mini-bar-val" style="color:var(--amber)">58%</div></div>
+        <div class="mini-bar-row"><div class="mini-bar-lbl">Opening Range</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:44%;background:var(--amber)"></div></div><div class="mini-bar-val" style="color:var(--amber)">44%</div></div>
+        <div class="mini-bar-row"><div class="mini-bar-lbl">Reversal</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:28%;background:var(--red)"></div></div><div class="mini-bar-val" style="color:var(--red)">28%</div></div>
+        <div style="margin-top:16px">
+          <div class="insight-mock"><div class="insight-mock-head">✦ Breakout is your strongest setup</div><div class="insight-mock-body">71% win rate across 34 trades. This is your edge. Trade it more.</div></div>
+          <div class="insight-mock bad"><div class="insight-mock-head">⚠ Reversal trades are costing you</div><div class="insight-mock-body">Only 28% win rate. These 12 trades cost you ₹38,400. Retire this setup?</div></div>
+        </div>
+      </div>
+      <div class="sol-info">
+        <h3>Discover Your<br>Real Edge</h3>
+        <p>TradePrint analyses every trade you log and finds the patterns you can't see yourself. Win rate by setup, by emotion, by time of day, by day of week — all built from your data, in rupees and percentages.</p>
+        <div class="sol-feature-list">
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Win rate by setup, instrument, emotion, time, day</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Cost of Bad Habits — every pattern shown in ₹ + %</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>What-If Simulator — "if you followed every rule..."</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Setup Graveyard — retire setups that don't work for you</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>AI coaching report built entirely from your numbers</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Expiry day + first 15 minutes performance tracker</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sol-content" id="tab-discipline">
+      <div class="sol-visual">
+        <div class="sol-visual-title">Rule Adherence — Last 30 Trades</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px">
+          ${Array(30).fill(0).map((_,i)=>`<div style="width:14px;height:14px;border-radius:3px;background:${[0,4,7,12,18,22,26].includes(i)?'var(--red)':'var(--green)'}"></div>`).join('')}
+        </div>
+        <div style="display:flex;gap:16px;margin-bottom:16px">
+          <div style="font-size:11px;color:var(--text2)"><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:5px"></span>Rules followed</div>
+          <div style="font-size:11px;color:var(--text2)"><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;margin-right:5px"></span>Rules broken</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:14px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">The Cost of Your Violations</div>
+          <div style="font-family:var(--mono);color:var(--red);font-size:22px;margin-bottom:4px">-₹61,200 <span style="font-size:14px;color:var(--text3)">(-12.2%)</span></div>
+          <div style="font-size:11px;color:var(--text3)">P&L lost on trades where rules were broken</div>
+        </div>
+        <div style="margin-top:12px;background:var(--bg3);border-radius:8px;padding:14px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">If you had followed every rule:</div>
+          <div style="font-family:var(--mono);color:var(--green);font-size:18px">+₹1,24,800 <span style="font-size:12px;color:var(--text3)">(+24.9%)</span></div>
+          <div style="font-size:11px;color:var(--text3)">instead of your actual ₹63,600</div>
+        </div>
+      </div>
+      <div class="sol-info">
+        <h3>Accountability<br>That's Real</h3>
+        <p>Every trade log asks: did you follow your rules? Your discipline score tracks this honestly. The What-If Simulator shows you exactly how much your violations have cost you in rupees and percentage of capital.</p>
+        <div class="sol-feature-list">
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Write your own rules at onboarding — your rules, your accountability</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Per-rule adherence check on every single trade log</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Discipline score + streak tracker</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Cost of violations shown in ₹ and % of capital</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Avg P&L when disciplined vs when not — side by side</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Weekly discipline review every Sunday</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sol-content" id="tab-community">
+      <div class="sol-visual">
+        <div class="sol-visual-title">Community Feed — Anonymous Insights</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-family:var(--mono);font-size:10px;color:var(--amber)">EDGE INSIGHT</span><span style="font-size:10px;color:var(--text3)">Intraday · F&O</span></div>
+            <div style="font-size:13px;margin-bottom:4px">"My win rate on breakouts after 10:30am is 74%. Before 10:30am it drops to 31%."</div>
+            <div style="font-size:11px;color:var(--text3)">Trader has been active 8 months · 47 👍</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-family:var(--mono);font-size:10px;color:var(--blue)">DISCIPLINE</span><span style="font-size:10px;color:var(--text3)">Swing · MTF</span></div>
+            <div style="font-size:13px;margin-bottom:4px">"Stopped trading expiry day completely. P&L improved by 18% in one month."</div>
+            <div style="font-size:11px;color:var(--text3)">Trader has been active 5 months · 38 👍</div>
+          </div>
+          <div style="background:rgba(240,69,90,0.06);border:1px solid rgba(240,69,90,0.2);border-radius:8px;padding:10px;font-size:12px;color:var(--text3)">
+            🚫 "BANKNIFTY 47200 CE — buy now, target 500" was removed. No trade calls allowed.
+          </div>
+        </div>
+      </div>
+      <div class="sol-info">
+        <h3>Community for<br>Serious Traders Only</h3>
+        <p>Not a WhatsApp group full of stock tips. A private community where serious traders share anonymous edge insights, hold each other accountable, and build their trading businesses together.</p>
+        <div class="sol-feature-list">
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Anonymous edge sharing — insights from real data, not opinions</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Discipline leaderboard — ranked by consistency, not P&L</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Accountability partners — share discipline score with one trader</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Weekly challenges — community-wide discipline goals</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Strictly no stock tips, trade calls, or buy/sell recommendations</div>
+          <div class="sol-feature"><div class="sol-feature-dot"></div>Violations removed immediately — community quality enforced</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDIA SPECIFIC -->
+<section class="section">
+  <div class="section-eyebrow">Built for India</div>
+  <div class="section-title">Finally — A Tool That<br>Understands <em style="font-style:normal;color:var(--amber)">Indian Markets</em></div>
+  <div class="section-sub">Every competitor is built for US markets. TradePrint is built natively for NSE, BSE, and MCX traders.</div>
+  <div class="india-grid">
+    <div class="india-card"><div class="india-card-icon">📅</div><div><div class="india-card-title">Expiry Day Tracker</div><div class="india-card-body">Track how you perform specifically on Thursday F&O expiry vs regular trading days. Most traders perform worse on expiry and don't know it.</div></div></div>
+    <div class="india-card"><div class="india-card-icon">⏰</div><div><div class="india-card-title">First 15 Minutes Detector</div><div class="india-card-body">NSE's opening volatility is unique. TradePrint tracks your win rate in the first 15 minutes separately — the data usually surprises traders.</div></div></div>
+    <div class="india-card"><div class="india-card-icon">😴</div><div><div class="india-card-title">Boredom Trade Detector</div><div class="india-card-body">The 11:30am–1pm NSE low-volume window is where most boredom trades happen. TradePrint flags them and shows you the cumulative cost.</div></div></div>
+    <div class="india-card"><div class="india-card-icon">🇮🇳</div><div><div class="india-card-title">Hindi Language Support</div><div class="india-card-body">Switch the entire app to Hindi in one click. Because serious traders shouldn't be held back by language — the edge matters, not the language.</div></div></div>
+    <div class="india-card"><div class="india-card-icon">₹</div><div><div class="india-card-title">Rupee + Percentage Reporting</div><div class="india-card-body">Every metric shown in both ₹ and % of your capital. "You lost 2.4% of capital on revenge trades" hits differently than just seeing a number.</div></div></div>
+    <div class="india-card"><div class="india-card-icon">🏅</div><div><div class="india-card-title">Multi-Instrument Support</div><div class="india-card-body">F&O options buyer, options seller, futures, equity MTF, commodity MCX — all tracked with the context specific to each instrument type.</div></div></div>
+  </div>
+</section>
+
+<!-- COMMUNITY RULES -->
+<section class="section community-section" id="community">
+  <div class="community-wrap">
+    <div class="section-eyebrow">Community Standards</div>
+    <div class="section-title">What Kind of Community<br>We're Building</div>
+    <div class="section-sub">The quality of a trading community determines whether it helps you or destroys you. We chose quality over size.</div>
+    <div class="community-rules">
+      <div class="rule-card allowed"><div class="rule-card-icon">✅</div><div><div class="rule-card-title">Allowed</div>Share anonymous edge insights from your own data. Discuss trading psychology and discipline. Help others understand market concepts. Share what setups work for you without specific trade calls. Hold each other accountable on discipline scores.</div></div>
+      <div class="rule-card allowed"><div class="rule-card-icon">✅</div><div><div class="rule-card-title">Encouraged</div>Honest reflection on your own mistakes. Weekly discipline challenges. Accountability partnerships. Sharing what you've learned from your TradePrint analysis. Building a serious, long-term approach to trading as a business.</div></div>
+      <div class="rule-card banned"><div class="rule-card-icon">🚫</div><div><div class="rule-card-title">Strictly Banned</div>Stock tips, trade calls, buy/sell recommendations, price targets. Promoting courses, channels, or paid services. Screenshots of profits without context. Finfluencer behaviour of any kind. Any content that could be interpreted as investment advice. Violations result in immediate removal.</div></div>
+      <div class="rule-card banned"><div class="rule-card-icon">🚫</div><div><div class="rule-card-title">Zero Tolerance</div>TradePrint is not a platform for unregistered investment advice. SEBI regulations exist to protect traders. Any user found systematically providing specific trade recommendations will be permanently banned and reported where required by law.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-eyebrow">Simple Pricing</div>
+  <div class="section-title">Built for Traders Who<br>Are <em style="font-style:normal;color:var(--amber)">Serious</em></div>
+  <div class="section-sub">Free to start. Pro for those committed to building a trading business. Less than the cost of one bad trade.</div>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="pricing-tier">Free</div>
+      <div class="pricing-price">₹0<span>/forever</span></div>
+      <div class="pricing-cycle">No credit card required</div>
+      <hr class="pricing-divider">
+      <div class="pricing-features">
+        <div class="pf-item"><span class="pf-check">✓</span> Up to 30 trade logs</div>
+        <div class="pf-item"><span class="pf-check">✓</span> Basic P&L tracking</div>
+        <div class="pf-item"><span class="pf-check">✓</span> Pre-session checklist</div>
+        <div class="pf-item"><span class="pf-check">✓</span> Daily journal</div>
+        <div class="pf-item no"><span class="pf-check">✗</span> Edge analysis</div>
+        <div class="pf-item no"><span class="pf-check">✗</span> Discipline tracker</div>
+        <div class="pf-item no"><span class="pf-check">✗</span> AI coaching</div>
+        <div class="pf-item no"><span class="pf-check">✗</span> Weekly review</div>
+        <div class="pf-item no"><span class="pf-check">✗</span> Community access</div>
+      </div>
+      <a href="auth.html" class="btn-ghost" style="display:block;text-align:center;width:100%">Get Started Free</a>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Most Popular</div>
+      <div class="pricing-tier">Pro</div>
+      <div class="pricing-price">₹599<span>/month</span></div>
+      <div class="pricing-cycle">or ₹4,999/year — save ₹2,189</div>
+      <hr class="pricing-divider">
+      <div class="pricing-features">
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> Unlimited trade logs</div>
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> Full edge analysis</div>
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> Cost of Bad Habits report</div>
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> What-If Simulator</div>
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> Discipline tracker + streak</div>
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> AI coaching report</div>
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> Weekly review (Sunday mode)</div>
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> Community access</div>
+        <div class="pf-item"><span class="pf-check" style="color:var(--green)">✓</span> Hindi language support</div>
+      </div>
+      <a href="auth.html" class="btn-primary" style="display:block;text-align:center;width:100%">Start Pro Free Trial →</a>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:20px;font-size:12px;color:var(--text3)">7-day free trial on Pro. Cancel anytime. Payments processed securely by Razorpay.</div>
+</section>
+
+<!-- LEGAL SECTION -->
+<section class="section legal-section" style="padding:40px 5%">
+  <div class="legal-box">
+    <h4>Important Legal Disclosures</h4>
+    <p><strong>Not Investment Advice:</strong> TradePrint is a personal trading journal and performance analytics tool. It does not provide investment advice, stock recommendations, or trading signals of any kind. TradePrint is not registered with the Securities and Exchange Board of India (SEBI) as an Investment Adviser or Research Analyst. Nothing on this platform should be construed as investment advice.</p><br>
+    <p><strong>Risk Disclosure:</strong> Trading in equity, F&O, commodities, forex, and crypto involves substantial risk of loss and may not be suitable for all investors. Past performance tracked on this platform is not indicative of future results. You are solely responsible for all trading decisions. Only trade with capital you can afford to lose entirely.</p><br>
+    <p><strong>Data & Privacy:</strong> TradePrint takes your privacy seriously. Your trading data is personal and sensitive. It is stored securely, never sold to third parties, and never used for any purpose other than providing you the service. You have the right to delete your account and all associated data at any time. TradePrint complies with India's Digital Personal Data Protection Act, 2023.</p><br>
+    <p><strong>Community Disclaimer:</strong> Community content is user-generated and does not represent the views or recommendations of TradePrint. TradePrint does not endorse any trading strategy, view, or recommendation made by community members. Content that constitutes investment advice is strictly prohibited and removed.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Trade<span>Print</span></div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Community Guidelines</a>
+    <a href="#">Risk Disclosure</a>
+    <a href="auth.html">Login</a>
+  </div>
+  <div class="footer-copy">© 2025 TradePrint. Not SEBI registered. Not investment advice. All analysis based on user-entered data only.</div>
+</footer>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.sol-content').forEach(c => c.classList.remove('on'));
+  document.querySelectorAll('.sol-tab').forEach(t => t.classList.remove('on'));
+  document.getElementById('tab-' + id).classList.add('on');
+  btn.classList.add('on');
+}
+</script>
+</body>
+</html>
