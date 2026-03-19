@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradePrint — Import Trades</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+:root{--bg:#05080b;--bg2:#0b1018;--bg3:#111820;--bg4:#18222e;--border:#1c2838;--border2:#253345;--text:#dce8f5;--text2:#7a94ad;--text3:#3d5168;--amber:#e8a020;--amber2:#ffc046;--green:#00d68f;--red:#f0455a;--blue:#3fb5f0;--head:'Barlow Condensed',sans-serif;--mono:'JetBrains Mono',monospace;--body:'Outfit',sans-serif;--r:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);height:50px;display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:10}
+.topbar-logo{font-family:var(--head);font-size:22px;font-weight:900;color:var(--amber)}
+.topbar-logo span{color:var(--text3)}
+.topbar-back{margin-left:auto;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:6px 14px;font-family:var(--head);font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;letter-spacing:.3px;transition:.2s}
+.topbar-back:hover{color:var(--amber);border-color:var(--amber)}
+
+.main{max-width:1000px;margin:0 auto;padding:28px 20px}
+.page-title{font-family:var(--head);font-size:32px;font-weight:900;letter-spacing:.5px;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px}
+
+/* BROKER GRID */
+.broker-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:600px){.broker-grid{grid-template-columns:repeat(3,1fr)}}
+.broker-card{border:2px solid var(--border2);border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;background:var(--bg3);transition:.2s}
+.broker-card:hover{border-color:var(--amber);background:rgba(232,160,32,0.06)}
+.broker-card.sel{border-color:var(--amber);background:rgba(232,160,32,0.1)}
+.broker-logo{font-size:24px;margin-bottom:6px}
+.broker-name{font-family:var(--head);font-size:14px;font-weight:800;letter-spacing:.3px}
+.broker-tag{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* INSTRUCTIONS */
+.instructions{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:16px;display:none}
+.instructions.show{display:block}
+.inst-title{font-family:var(--head);font-size:15px;font-weight:800;color:var(--amber);margin-bottom:10px;letter-spacing:.3px}
+.inst-steps{display:flex;flex-direction:column;gap:7px}
+.inst-step{display:flex;gap:10px;font-size:13px;color:var(--text2);line-height:1.5}
+.inst-num{background:var(--amber);color:#000;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:40px;text-align:center;cursor:pointer;transition:.2s;position:relative;margin-bottom:16px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--amber);background:rgba(232,160,32,0.04)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:32px;margin-bottom:10px}
+.upload-title{font-family:var(--head);font-size:18px;font-weight:800;margin-bottom:4px}
+.upload-sub{font-size:12px;color:var(--text3)}
+
+/* DEFAULTS */
+.defaults-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:600px){.defaults-row{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:500}
+.field select,.field input{background:var(--bg3);border:1.5px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 12px;outline:none;transition:.2s}
+.field select:focus,.field input:focus{border-color:var(--amber)}
+.field select option{background:var(--bg2)}
+
+/* PREVIEW TABLE */
+.preview-wrap{overflow-x:auto;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg3)}
+.tag{display:inline-block;padding:2px 6px;border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:600}
+.t-green{background:rgba(0,214,143,0.1);color:var(--green)}
+.t-red{background:rgba(240,69,90,0.1);color:var(--red)}
+.t-amber{background:rgba(232,160,32,0.1);color:var(--amber)}
+.t-gray{background:var(--bg4);color:var(--text2)}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:600px){.stats-bar{grid-template-columns:1fr 1fr}}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.stat-val{font-family:var(--mono);font-size:22px;font-weight:600;line-height:1}
+.stat-lbl{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:6px;font-family:var(--head);font-size:14px;font-weight:700;cursor:pointer;border:none;transition:.2s;letter-spacing:.3px}
+.btn-amber{background:var(--amber);color:#000}
+.btn-amber:hover{background:var(--amber2)}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--amber);color:var(--amber)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ALERTS */
+.alert{border-radius:var(--r);padding:12px 16px;font-size:13px;margin-bottom:14px;display:none;line-height:1.6}
+.alert.show{display:block}
+.alert-err{background:rgba(240,69,90,0.08);border:1px solid rgba(240,69,90,0.3);color:var(--red)}
+.alert-ok{background:rgba(0,214,143,0.08);border:1px solid rgba(0,214,143,0.3);color:var(--green)}
+.alert-info{background:rgba(232,160,32,0.08);border:1px solid rgba(232,160,32,0.3);color:var(--amber)}
+
+/* PROGRESS */
+.prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.prog-fill{height:100%;background:var(--amber);border-radius:2px;transition:.3s}
+
+.section{display:none}
+.section.show{display:block}
+
+.disc-banner{background:rgba(240,69,90,0.06);border:1px solid rgba(240,69,90,0.2);border-radius:var(--r);padding:12px 16px;font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:20px}
+.disc-banner strong{color:rgba(240,69,90,.8)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">Trade<span>Print</span></div>
+  <span style="font-size:12px;color:var(--text3)">Import Trades from Broker</span>
+  <a href="app.html" class="topbar-back">← Back to App</a>
+</div>
+
+<div class="main">
+  <div class="page-title">Import from Broker</div>
+  <div class="page-sub">Export your trade history from your broker as a CSV file and import it here. TradePrint automatically reads your broker's format — no reformatting needed.</div>
+
+  <div class="disc-banner">
+    <strong>Important:</strong> Imported trades will still need you to add emotion, setup type, and rule adherence — this data only exists in your head. After importing, go to Trade History and review each trade to add these details for accurate edge analysis.
+  </div>
+
+  <!-- STEP 1: BROKER SELECTION -->
+  <div class="section show" id="step1">
+    <div class="card">
+      <div class="card-title">Step 1 — Select Your Broker</div>
+      <div class="broker-grid">
+        <div class="broker-card" onclick="selBroker('zerodha',this)">
+          <div class="broker-logo">🟢</div>
+          <div class="broker-name">Zerodha</div>
+          <div class="broker-tag">Kite / Console</div>
+        </div>
+        <div class="broker-card" onclick="selBroker('dhan',this)">
+          <div class="broker-logo">🔵</div>
+          <div class="broker-name">Dhan</div>
+          <div class="broker-tag">Trade History</div>
+        </div>
+        <div class="broker-card" onclick="selBroker('upstox',this)">
+          <div class="broker-logo">🟣</div>
+          <div class="broker-name">Upstox</div>
+          <div class="broker-tag">Tradebook</div>
+        </div>
+        <div class="broker-card" onclick="selBroker('angel',this)">
+          <div class="broker-logo">🟠</div>
+          <div class="broker-name">Angel One</div>
+          <div class="broker-tag">Trade Book</div>
+        </div>
+        <div class="broker-card" onclick="selBroker('fyers',this)">
+          <div class="broker-logo">🔴</div>
+          <div class="broker-name">Fyers</div>
+          <div class="broker-tag">Tradebook</div>
+        </div>
+      </div>
+
+      <!-- Instructions per broker -->
+      <div class="instructions" id="inst-zerodha">
+        <div class="inst-title">How to export from Zerodha</div>
+        <div class="inst-steps">
+          <div class="inst-step"><div class="inst-num">1</div>Go to <strong>console.zerodha.com</strong></div>
+          <div class="inst-step"><div class="inst-num">2</div>Click <strong>Reports</strong> in the top menu</div>
+          <div class="inst-step"><div class="inst-num">3</div>Click <strong>Tradebook</strong></div>
+          <div class="inst-step"><div class="inst-num">4</div>Select your date range (up to 1 year at a time)</div>
+          <div class="inst-step"><div class="inst-num">5</div>Click <strong>Download CSV</strong> — upload that file below</div>
+        </div>
+      </div>
+      <div class="instructions" id="inst-dhan">
+        <div class="inst-title">How to export from Dhan</div>
+        <div class="inst-steps">
+          <div class="inst-step"><div class="inst-num">1</div>Log in to <strong>web.dhan.co</strong></div>
+          <div class="inst-step"><div class="inst-num">2</div>Click your <strong>Profile icon</strong> → <strong>Statement & Reports</strong></div>
+          <div class="inst-step"><div class="inst-num">3</div>Select <strong>All Exchange Transactions</strong></div>
+          <div class="inst-step"><div class="inst-num">4</div>Choose your date range and click <strong>Download as CSV</strong></div>
+          <div class="inst-step"><div class="inst-num">5</div>Upload that file below</div>
+        </div>
+      </div>
+      <div class="instructions" id="inst-upstox">
+        <div class="inst-title">How to export from Upstox</div>
+        <div class="inst-steps">
+          <div class="inst-step"><div class="inst-num">1</div>Log in to <strong>upstox.com</strong></div>
+          <div class="inst-step"><div class="inst-num">2</div>Go to <strong>Reports</strong> → <strong>Tradebook</strong></div>
+          <div class="inst-step"><div class="inst-num">3</div>Select your date range</div>
+          <div class="inst-step"><div class="inst-num">4</div>Click <strong>Download</strong> → choose <strong>CSV</strong></div>
+          <div class="inst-step"><div class="inst-num">5</div>Upload that file below</div>
+        </div>
+      </div>
+      <div class="instructions" id="inst-angel">
+        <div class="inst-title">How to export from Angel One</div>
+        <div class="inst-steps">
+          <div class="inst-step"><div class="inst-num">1</div>Log in to <strong>angelone.in</strong></div>
+          <div class="inst-step"><div class="inst-num">2</div>Go to <strong>Reports</strong> → <strong>Trade Book</strong></div>
+          <div class="inst-step"><div class="inst-num">3</div>Select date range and exchange</div>
+          <div class="inst-step"><div class="inst-num">4</div>Click <strong>Download</strong> → <strong>CSV</strong></div>
+          <div class="inst-step"><div class="inst-num">5</div>Upload that file below</div>
+        </div>
+      </div>
+      <div class="instructions" id="inst-fyers">
+        <div class="inst-title">How to export from Fyers</div>
+        <div class="inst-steps">
+          <div class="inst-step"><div class="inst-num">1</div>Log in to <strong>fyers.in</strong></div>
+          <div class="inst-step"><div class="inst-num">2</div>Go to <strong>Reports</strong> → <strong>Tradebook</strong></div>
+          <div class="inst-step"><div class="inst-num">3</div>Select your date range</div>
+          <div class="inst-step"><div class="inst-num">4</div>Click <strong>Export to CSV</strong></div>
+          <div class="inst-step"><div class="inst-num">5</div>Upload that file below</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="card" id="upload-card" style="display:none">
+      <div class="card-title">Step 2 — Upload Your CSV File</div>
+      <div class="upload-zone" id="upload-zone" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+        <input type="file" accept=".csv,.txt" onchange="fileSelected(this)">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title">Drop CSV file here or click to browse</div>
+        <div class="upload-sub" id="upload-sub">Supports .csv files exported directly from your broker</div>
+      </div>
+      <div class="alert alert-err" id="parse-err"></div>
+      <div class="alert alert-info" id="parse-info"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: PREVIEW & CONFIRM -->
+  <div class="section" id="step2">
+    <div class="alert alert-ok show" id="parse-ok"></div>
+
+    <!-- Defaults to apply to all imported trades -->
+    <div class="card">
+      <div class="card-title">Step 3 — Set Defaults for Imported Trades</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6">These will be applied to all imported trades. You can edit individual trades afterwards in Trade History.</div>
+      <div class="defaults-row">
+        <div class="field">
+          <label>Default Setup Type</label>
+          <select id="def-setup"><option value="">— select —</option></select>
+        </div>
+        <div class="field">
+          <label>Default Emotion</label>
+          <select id="def-emo">
+            <option value="none">— not set —</option>
+            <option value="calm">😌 Calm</option>
+            <option value="confident">💪 Confident</option>
+            <option value="anxious">😰 Anxious</option>
+            <option value="fomo">🔥 FOMO</option>
+            <option value="frustrated">😤 Frustrated</option>
+            <option value="bored">😑 Bored</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Rules Followed?</label>
+          <select id="def-rules">
+            <option value="true">✓ Yes — followed all rules</option>
+            <option value="false">✗ No — rules were broken</option>
+            <option value="true">— Leave as followed</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats preview -->
+    <div class="stats-bar" id="preview-stats"></div>
+
+    <!-- Trade preview table -->
+    <div class="card">
+      <div class="card-title">Step 4 — Review Imported Trades</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Preview of trades that will be imported. Intraday buy+sell pairs are matched automatically.</div>
+      <div class="preview-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Symbol</th>
+              <th>Type</th>
+              <th>Direction</th>
+              <th>Entry ₹</th>
+              <th>Exit ₹</th>
+              <th>Qty</th>
+              <th>P&L ₹</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="preview-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="alert alert-err" id="import-err"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-amber" onclick="confirmImport()" id="import-btn">✓ Import All Trades</button>
+      <button class="btn btn-ghost" onclick="resetImport()">← Start Over</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: DONE -->
+  <div class="section" id="step3">
+    <div class="card" style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">✅</div>
+      <div style="font-family:var(--head);font-size:28px;font-weight:900;margin-bottom:8px" id="done-title">Trades Imported!</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.7;max-width:500px;margin:0 auto 24px" id="done-sub"></div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="app.html" class="btn btn-amber">Go to My Edge →</a>
+        <button class="btn btn-ghost" onclick="resetImport()">Import More Trades</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const _sb = window.supabaseClient;
+let USER = null, PROFILE = null;
+let selectedBroker = null;
+let parsedTrades = [];
+
+// Auth check
+window.onload = async () => {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+  USER = session.user;
+  const { data } = await _sb.from('profiles').select('*').eq('user_id', USER.id).single();
+  PROFILE = data;
+  if (PROFILE?.setups?.length) {
+    const sel = document.getElementById('def-setup');
+    PROFILE.setups.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+  }
+};
+
+// ══ BROKER SELECTION ══
+function selBroker(broker, el) {
+  document.querySelectorAll('.broker-card').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('.instructions').forEach(i => i.classList.remove('show'));
+  el.classList.add('sel');
+  selectedBroker = broker;
+  document.getElementById('inst-' + broker).classList.add('show');
+  document.getElementById('upload-card').style.display = 'block';
+  clearAlerts();
+}
+
+function dragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag'); }
+function dragLeave() { document.getElementById('upload-zone').classList.remove('drag'); }
+function dropFile(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+function fileSelected(input) { if (input.files[0]) processFile(input.files[0]); }
+
+// ══ FILE PROCESSING ══
+function processFile(file) {
+  if (!selectedBroker) { showAlert('parse-err', 'Please select a broker first.'); return; }
+  const sub = document.getElementById('upload-sub');
+  sub.textContent = '⏳ Reading ' + file.name + '...';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const text = e.target.result;
+      parsedTrades = parseCSV(text, selectedBroker);
+      if (!parsedTrades.length) { showAlert('parse-err', 'No trades found in this file. Make sure you exported the correct file from your broker.'); sub.textContent = 'Try again'; return; }
+      sub.textContent = '✓ ' + file.name + ' loaded';
+      showPreview();
+    } catch(err) {
+      showAlert('parse-err', 'Could not read this file: ' + err.message + '. Make sure you exported as CSV from your broker.');
+      sub.textContent = 'Try again';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ══ CSV PARSERS PER BROKER ══
+function parseCSV(text, broker) {
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) throw new Error('File appears to be empty');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+  const rows = lines.slice(1).map(line => {
+    const cols = splitCSVLine(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (cols[i] || '').replace(/^"|"$/g, '').trim());
+    return obj;
+  }).filter(r => Object.values(r).some(v => v));
+
+  switch(broker) {
+    case 'zerodha': return parseZerodha(rows);
+    case 'dhan':    return parseDhan(rows);
+    case 'upstox':  return parseUpstox(rows);
+    case 'angel':   return parseAngel(rows);
+    case 'fyers':   return parseFyers(rows);
+    default: throw new Error('Unknown broker');
+  }
+}
+
+function splitCSVLine(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQ = !inQ; }
+    else if (line[i] === ',' && !inQ) { result.push(cur); cur = ''; }
+    else cur += line[i];
+  }
+  result.push(cur);
+  return result;
+}
+
+// Helper: find column by possible names
+function col(row, ...names) {
+  for (const n of names) {
+    const k = Object.keys(row).find(k => k.includes(n.toLowerCase()));
+    if (k && row[k]) return row[k];
+  }
+  return '';
+}
+
+// ZERODHA: symbol, isin, trade_date, exchange, segment, series, trade_type, auction, quantity, price, order_id, trade_id, order_execution_time
+function parseZerodha(rows) {
+  const legs = rows.map(r => ({
+    symbol: col(r,'symbol'),
+    date: formatDate(col(r,'trade_date','date')),
+    time: col(r,'order_execution_time','time').split(' ')[1] || '09:15',
+    side: col(r,'trade_type','type','side').toUpperCase().includes('BUY') ? 'BUY' : 'SELL',
+    price: parseFloat(col(r,'price')) || 0,
+    qty: parseFloat(col(r,'quantity','qty')) || 0,
+    exchange: col(r,'exchange'),
+    segment: col(r,'segment','series'),
+  })).filter(l => l.symbol && l.price && l.qty);
+  return matchLegs(legs);
+}
+
+// DHAN: date, time, symbol, series, trade#, order#, trade type (b/s), qty, trade price, exchange
+function parseDhan(rows) {
+  const legs = rows.map(r => {
+    const typeRaw = col(r,'trade type','type','transaction').toUpperCase();
+    const side = typeRaw.startsWith('B') ? 'BUY' : 'SELL';
+    return {
+      symbol: col(r,'symbol','scrip','tradingsymbol','customsymbol'),
+      date: formatDate(col(r,'date','trade date','exchange time')),
+      time: col(r,'time','trade time','exchange time').split(' ')[1] || '09:15',
+      side,
+      price: parseFloat(col(r,'trade price','price','traded price')) || 0,
+      qty: parseFloat(col(r,'qty','quantity','traded quantity')) || 0,
+      exchange: col(r,'exchange'),
+      segment: col(r,'series','segment','instrument'),
+    };
+  }).filter(l => l.symbol && l.price && l.qty);
+  return matchLegs(legs);
+}
+
+// UPSTOX: symbol, series, trade_date, trade_time, side, quantity, price, exchange, product, order_id, trade_id
+function parseUpstox(rows) {
+  const legs = rows.map(r => ({
+    symbol: col(r,'symbol','instrument'),
+    date: formatDate(col(r,'trade_date','date')),
+    time: col(r,'trade_time','time') || '09:15',
+    side: col(r,'side','trade_type','type').toUpperCase().includes('BUY') ? 'BUY' : 'SELL',
+    price: parseFloat(col(r,'price','avg_price','average_price')) || 0,
+    qty: parseFloat(col(r,'quantity','qty')) || 0,
+    exchange: col(r,'exchange'),
+    segment: col(r,'series','product'),
+  })).filter(l => l.symbol && l.price && l.qty);
+  return matchLegs(legs);
+}
+
+// ANGEL ONE: trade_no, order_no, symbol, isin, series, trade_date, trade_time, exchange, market_type, trade_type, quantity, price
+function parseAngel(rows) {
+  const legs = rows.map(r => ({
+    symbol: col(r,'symbol','scrip','instrument'),
+    date: formatDate(col(r,'trade_date','date')),
+    time: col(r,'trade_time','time') || '09:15',
+    side: col(r,'trade_type','type','side').toUpperCase().includes('BUY') ? 'BUY' : 'SELL',
+    price: parseFloat(col(r,'price','net_price')) || 0,
+    qty: parseFloat(col(r,'quantity','qty')) || 0,
+    exchange: col(r,'exchange'),
+    segment: col(r,'series','market_type'),
+  })).filter(l => l.symbol && l.price && l.qty);
+  return matchLegs(legs);
+}
+
+// FYERS: date, time, symbol, qty, price, side, exchange, product, order_id, trade_id
+function parseFyers(rows) {
+  const legs = rows.map(r => ({
+    symbol: col(r,'symbol','scrip','instrument'),
+    date: formatDate(col(r,'date','trade_date')),
+    time: col(r,'time','trade_time') || '09:15',
+    side: col(r,'side','type','trade_type').toUpperCase().includes('BUY') ? 'BUY' : 'SELL',
+    price: parseFloat(col(r,'price','avg_price')) || 0,
+    qty: parseFloat(col(r,'qty','quantity')) || 0,
+    exchange: col(r,'exchange'),
+    segment: col(r,'product','series'),
+  })).filter(l => l.symbol && l.price && l.qty);
+  return matchLegs(legs);
+}
+
+// ══ MATCH BUY+SELL LEGS INTO TRADES ══
+function matchLegs(legs) {
+  // Group by date + symbol
+  const groups = {};
+  legs.forEach(l => {
+    const k = l.date + '|' + l.symbol;
+    if (!groups[k]) groups[k] = { buys: [], sells: [] };
+    groups[k][l.side === 'BUY' ? 'buys' : 'sells'].push(l);
+  });
+
+  const trades = [];
+  Object.entries(groups).forEach(([key, { buys, sells }]) => {
+    const [date, symbol] = key.split('|');
+    // FIFO match buys with sells
+    const bQueue = [...buys];
+    const sQueue = [...sells];
+
+    while (bQueue.length && sQueue.length) {
+      const buy = bQueue.shift();
+      const sell = sQueue.shift();
+      const qty = Math.min(buy.qty, sell.qty);
+      const pnl = (sell.price - buy.price) * qty;
+      trades.push({
+        symbol, date,
+        time: buy.time || sell.time,
+        direction: 'Long / Buy',
+        entry_price: buy.price,
+        exit_price: sell.price,
+        quantity: qty,
+        pnl: Math.round(pnl * 100) / 100,
+        instrument: detectInstrument(symbol, buy.segment || sell.segment),
+        exchange: buy.exchange || sell.exchange,
+      });
+      if (buy.qty > qty) bQueue.unshift({ ...buy, qty: buy.qty - qty });
+      if (sell.qty > qty) sQueue.unshift({ ...sell, qty: sell.qty - qty });
+    }
+
+    // Unmatched sells = short trades
+    while (sQueue.length && bQueue.length === 0 && sells.length) {
+      // Try to match sell first (short trade)
+      if (buys.length && sQueue.length) break;
+      const sell = sQueue.shift();
+      const buy = bQueue.shift();
+      if (!buy) {
+        // Short — sell then buy back (need to find matching buy)
+        break;
+      }
+    }
+
+    // Handle short trades: sell first, buy back
+    if (sells.length && !buys.length) {
+      // pure short day
+    } else if (!sells.length && buys.length) {
+      // delivery buy — log as open position, skip
+    }
+  });
+
+  // Also handle short trades (sell first)
+  Object.entries(groups).forEach(([key, { buys, sells }]) => {
+    if (sells.length > buys.length) {
+      const [date, symbol] = key.split('|');
+      const extraSells = sells.slice(buys.length);
+      const extraBuys = buys.slice(sells.length);
+      // For each extra sell matched with extra buy (short)
+      const sQ = [...extraSells]; const bQ = [...extraBuys];
+      while (sQ.length && bQ.length) {
+        const sell = sQ.shift(); const buy = bQ.shift();
+        const qty = Math.min(sell.qty, buy.qty);
+        const pnl = (sell.price - buy.price) * qty;
+        trades.push({
+          symbol, date,
+          time: sell.time || buy.time,
+          direction: 'Short / Sell',
+          entry_price: sell.price,
+          exit_price: buy.price,
+          quantity: qty,
+          pnl: Math.round(pnl * 100) / 100,
+          instrument: detectInstrument(symbol, sell.segment || buy.segment),
+          exchange: sell.exchange || buy.exchange,
+        });
+      }
+    }
+  });
+
+  return trades.sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''));
+}
+
+function detectInstrument(symbol, segment) {
+  const s = (symbol + ' ' + segment).toUpperCase();
+  if (s.includes('CE') || s.includes('CALL')) return 'Options — Call';
+  if (s.includes('PE') || s.includes('PUT')) return 'Options — Put';
+  if (s.includes('FUT') || s.includes('FUTURES')) return 'Futures';
+  if (s.includes('COMMODITY') || s.includes('MCX')) return 'Commodity';
+  return 'Equity';
+}
+
+function formatDate(raw) {
+  if (!raw) return new Date().toISOString().split('T')[0];
+  // Try various date formats
+  const clean = raw.split(' ')[0].trim();
+  // DD-MM-YYYY or DD/MM/YYYY
+  const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) return `${dmy[3]}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`;
+  // YYYY-MM-DD (already correct)
+  if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) return clean;
+  // MM/DD/YYYY
+  const mdy = clean.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mdy) return `${mdy[3]}-${mdy[1].padStart(2,'0')}-${mdy[2].padStart(2,'0')}`;
+  // Try native parse
+  const d = new Date(clean);
+  if (!isNaN(d)) return d.toISOString().split('T')[0];
+  return new Date().toISOString().split('T')[0];
+}
+
+// ══ PREVIEW ══
+function showPreview() {
+  clearAlerts();
+  if (!parsedTrades.length) { showAlert('parse-err', 'No complete trades found. The file may only contain single-leg (delivery) trades or is in an unexpected format.'); return; }
+
+  const totalPnl = parsedTrades.reduce((s, t) => s + t.pnl, 0);
+  const wins = parsedTrades.filter(t => t.pnl > 0).length;
+  const wr = Math.round(wins / parsedTrades.length * 100);
+  const cap = PROFILE?.capital || 1;
+
+  document.getElementById('preview-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-val" style="color:var(--amber)">${parsedTrades.length}</div><div class="stat-lbl">Trades found</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:${wr>=50?'var(--green)':'var(--red)'}">${wr}%</div><div class="stat-lbl">Win rate</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:${totalPnl>=0?'var(--green)':'var(--red)'}">${totalPnl>=0?'+':''} ₹${Math.round(Math.abs(totalPnl)).toLocaleString('en-IN')}</div><div class="stat-lbl">Total P&L</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--amber)">${(totalPnl/cap*100).toFixed(2)}%</div><div class="stat-lbl">P&L % of capital</div></div>
+  `;
+
+  const tbody = document.getElementById('preview-body');
+  tbody.innerHTML = parsedTrades.map(t => `<tr>
+    <td style="font-family:var(--mono);font-size:11px">${t.date}</td>
+    <td style="font-family:var(--mono);font-size:10px;color:var(--text3)">${(t.time||'').slice(0,5)}</td>
+    <td><strong>${t.symbol}</strong></td>
+    <td><span class="tag t-gray">${t.instrument}</span></td>
+    <td><span class="tag ${t.direction.includes('Long')?'t-green':'t-red'}">${t.direction.split('/')[0].trim()}</span></td>
+    <td style="font-family:var(--mono)">₹${t.entry_price.toLocaleString('en-IN')}</td>
+    <td style="font-family:var(--mono)">₹${t.exit_price.toLocaleString('en-IN')}</td>
+    <td style="font-family:var(--mono)">${t.quantity}</td>
+    <td style="font-family:var(--mono);color:${t.pnl>=0?'var(--green)':'var(--red)'}">${t.pnl>=0?'+':''}₹${Math.abs(Math.round(t.pnl)).toLocaleString('en-IN')}</td>
+    <td><span class="tag ${t.pnl>0?'t-green':t.pnl<0?'t-red':'t-amber'}">${t.pnl>0?'WIN':t.pnl<0?'LOSS':'EVEN'}</span></td>
+  </tr>`).join('');
+
+  document.getElementById('step1').classList.remove('show');
+  document.getElementById('step2').classList.add('show');
+  showAlert('parse-ok', `✓ Found ${parsedTrades.length} completed trades from ${selectedBroker.charAt(0).toUpperCase()+selectedBroker.slice(1)}. Review below and click Import when ready.`);
+}
+
+// ══ IMPORT ══
+async function confirmImport() {
+  const btn = document.getElementById('import-btn');
+  btn.disabled = true; btn.textContent = 'Importing...';
+
+  const setup = document.getElementById('def-setup').value;
+  const emotion = document.getElementById('def-emo').value;
+  const rulesFollowed = document.getElementById('def-rules').value === 'true';
+  const cap = PROFILE?.capital || 1;
+
+  // Check for existing trades to avoid duplicates
+  const { data: existing } = await _sb.from('trades').select('trade_date,symbol,entry_price').eq('user_id', USER.id);
+  const existingKeys = new Set((existing||[]).map(t => `${t.trade_date}|${t.symbol}|${t.entry_price}`));
+
+  const toInsert = parsedTrades
+    .filter(t => !existingKeys.has(`${t.date}|${t.symbol}|${t.entry_price}`))
+    .map(t => {
+      const pnlPct = t.pnl / cap * 100;
+      const outcome = t.pnl > 0 ? 'win' : t.pnl < 0 ? 'loss' : 'breakeven';
+      const dayOfWeek = new Date(t.date).getDay();
+      return {
+        user_id: USER.id,
+        trade_date: t.date,
+        trade_time: (t.time||'09:15').slice(0,5),
+        symbol: t.symbol,
+        instrument: t.instrument || 'Equity',
+        direction: t.direction,
+        setup_type: setup || 'Imported',
+        entry_price: t.entry_price,
+        exit_price: t.exit_price,
+        quantity: t.quantity,
+        pnl: t.pnl,
+        pnl_pct: Math.round(pnlPct * 100) / 100,
+        outcome,
+        emotion: emotion || 'none',
+        rules_followed: rulesFollowed,
+        violations: [],
+        is_revenge: false,
+        is_boredom: false,
+        is_first_15min: false,
+        is_expiry_day: dayOfWeek === 4,
+        why_entered: `Imported from ${selectedBroker}`,
+        lesson: ''
+      };
+    });
+
+  const skipped = parsedTrades.length - toInsert.length;
+
+  if (!toInsert.length) {
+    showAlert('import-err', `All ${skipped} trades already exist in your account. No duplicates were imported.`);
+    btn.disabled = false; btn.textContent = '✓ Import All Trades';
+    return;
+  }
+
+  // Insert in batches of 50
+  let imported = 0;
+  for (let i = 0; i < toInsert.length; i += 50) {
+    const batch = toInsert.slice(i, i + 50);
+    const { error } = await _sb.from('trades').insert(batch);
+    if (error) { showAlert('import-err', 'Error during import: ' + error.message); btn.disabled = false; btn.textContent = '✓ Import All Trades'; return; }
+    imported += batch.length;
+  }
+
+  document.getElementById('step2').classList.remove('show');
+  document.getElementById('step3').classList.add('show');
+  document.getElementById('done-title').textContent = `${imported} Trades Imported!`;
+  document.getElementById('done-sub').textContent = `Successfully imported ${imported} trades from ${selectedBroker.charAt(0).toUpperCase()+selectedBroker.slice(1)}.${skipped?' '+skipped+' duplicate(s) were skipped.':''} Your Edge Analysis and Discipline Tracker are now updated with this data. Remember to add emotion and rule adherence to these trades for accurate analysis.`;
+}
+
+function resetImport() {
+  parsedTrades = [];
+  selectedBroker = null;
+  document.querySelectorAll('.broker-card').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('.instructions').forEach(i => i.classList.remove('show'));
+  document.getElementById('upload-card').style.display = 'none';
+  document.getElementById('upload-sub').textContent = 'Supports .csv files exported directly from your broker';
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('show'));
+  document.getElementById('step1').classList.add('show');
+  clearAlerts();
+}
+
+function showAlert(id, msg) { const el = document.getElementById(id); if(el){el.textContent=msg;el.classList.add('show')} }
+function clearAlerts() { document.querySelectorAll('.alert').forEach(a=>{a.classList.remove('show');a.textContent=''}) }
+</script>
+</body>
+</html>
