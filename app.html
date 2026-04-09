@@ -1558,22 +1558,53 @@ function loadSettings() {
 }
 function addSettingsRule(){const d=document.createElement('div');d.className='ob-rule-row';d.innerHTML=`<input type="text" placeholder="Add a rule..."><button onclick="removeRule(this)">✕</button>`;document.getElementById('set-rules-list').appendChild(d)}
 async function saveSettings() {
-  const updates={capital:parseFloat(document.getElementById('set-cap').value)||PROFILE.capital,risk_pct:parseFloat(document.getElementById('set-rpt').value)||PROFILE.risk_pct,daily_loss_pct:parseFloat(document.getElementById('set-dll').value)||PROFILE.daily_loss_pct,min_rr:parseFloat(document.getElementById('set-rr').value)||PROFILE.min_rr,exchange:document.getElementById('set-ex').value};
-  const {data,error}=await sb.from('profiles').update(updates).eq('user_id',USER.id).select().single();
-  if(error){toast('Error saving settings.','err');return}
-  PROFILE={...PROFILE,...data};refreshDashboard();toast('Settings saved.');
+  const updates={
+    capital:parseFloat(document.getElementById('set-cap').value)||PROFILE.capital,
+    risk_pct:parseFloat(document.getElementById('set-rpt').value)||PROFILE.risk_pct,
+    daily_loss_pct:parseFloat(document.getElementById('set-dll').value)||PROFILE.daily_loss_pct,
+    min_rr:parseFloat(document.getElementById('set-rr').value)||PROFILE.min_rr,
+    exchange:document.getElementById('set-ex').value,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    const {data,error}=await sb.from('profiles').update(updates).eq('user_id',USER.id).select().single();
+    if(error) throw error;
+    PROFILE={...PROFILE,...data};
+    refreshDashboard();
+    toast('✓ Settings saved.');
+  } catch(e) {
+    toast('Save failed: '+( e.message||'Check Supabase is active at supabase.com'),'err');
+    console.error('saveSettings error:',e);
+  }
 }
 async function saveRules() {
   const rules=[...document.querySelectorAll('#set-rules-list input')].map(i=>i.value.trim()).filter(Boolean);
-  const {data,error}=await sb.from('profiles').update({rules}).eq('user_id',USER.id).select().single();
-  if(error){toast('Error saving rules.','err');return}
-  PROFILE.rules=rules;buildDashRules();buildRuleChecks();toast('Rules updated.');
+  if(!rules.length){toast('Add at least one rule.','err');return}
+  try {
+    const {data,error}=await sb.from('profiles').update({rules, updated_at: new Date().toISOString()}).eq('user_id',USER.id).select().single();
+    if(error) throw error;
+    PROFILE.rules=rules;
+    buildDashRules();
+    buildRuleChecks();
+    toast('✓ Rules saved — '+rules.length+' rules active.');
+  } catch(e) {
+    toast('Save failed: '+(e.message||'Check Supabase is active'),'err');
+    console.error('saveRules error:',e);
+  }
 }
 async function saveSetups() {
   const setups=document.getElementById('set-setups').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const {data,error}=await sb.from('profiles').update({setups}).eq('user_id',USER.id).select().single();
-  if(error){toast('Error saving setups.','err');return}
-  PROFILE.setups=setups;setupLogForm();toast('Setups updated.');
+  if(!setups.length){toast('Add at least one setup type.','err');return}
+  try {
+    const {data,error}=await sb.from('profiles').update({setups, updated_at: new Date().toISOString()}).eq('user_id',USER.id).select().single();
+    if(error) throw error;
+    PROFILE.setups=setups;
+    setupLogForm();
+    toast('✓ Setups saved — '+setups.length+' setups active.');
+  } catch(e) {
+    toast('Save failed: '+(e.message||'Check Supabase is active'),'err');
+    console.error('saveSetups error:',e);
+  }
 }
 function exportData() {
   if(!TRADES.length){toast('No trades to export.','err');return}
